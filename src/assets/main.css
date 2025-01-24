@@ -1,0 +1,17 @@
+@import 'tailwindcss';
+
+body {
+	background-color: rgb(247, 254, 231);
+	color: black;
+}
+
+@layer tailwind-base, primevue, tailwind-utilities;
+
+@layer tailwind-base {
+	@tailwind base;
+}
+
+@layer tailwind-utilities {
+	@tailwind components;
+	@tailwind utilities;
+}
