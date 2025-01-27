@@ -1,48 +1,26 @@
 <script setup lang="ts">
-import { Url } from '@/config/constants'
-import type { ISneakers } from '@/config/types'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import axios from 'axios'
+import { useGetCartItems } from '@/hooks/useCartItems'
+import { useDeleteCartItem } from '@/hooks/useDeleteCartItem'
+import { useQueryClient } from '@tanstack/vue-query'
 import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
-import { computed, inject, ref } from 'vue'
+import { computed, inject } from 'vue'
 import { toast } from 'vue3-toastify'
 
-// const cartItems = ref<ISneakers[]>([])
 const client = useQueryClient()
 const visible = inject<boolean>('drawer')
-const loadingButton = ref(false)
 
-const fetchDataCart = async () => {
-	const res = await axios.get<ISneakers[]>(`${Url}/cart`)
-	return res.data
-}
-
-const deleteCartItem = async (id: string) => {
-	const res = await axios.delete(`${Url}/cart/${id}`)
-	return res.data
-}
-
-const { data: cartItems } = useQuery({
-	queryKey: ['cartItem'],
-	queryFn: async () => await fetchDataCart()
-})
+const { data: cartItems } = useGetCartItems()
 
 const isEmptyCart = computed(() => cartItems?.value?.length === 0)
 
-const { mutate } = useMutation({
-	mutationKey: ['deleteCartItem'],
-	mutationFn: async (id: string) => await deleteCartItem(id)
-})
+const { mutate: deleteCartItem } = useDeleteCartItem()
 
 const handleClick = (id: string) => {
-	mutate(id, {
+	deleteCartItem(id, {
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: ['cartItem'] })
-			const toastid = toast.success(`Sneaker #${id} delete successfully!`)
-			loadingButton.value = toast.isActive(toastid)
-				? (loadingButton.value = true)
-				: (loadingButton.value = false)
+			toast.success(`Sneaker #${id} delete successfully!`)
 		}
 	})
 }
@@ -59,7 +37,7 @@ const handleClick = (id: string) => {
 			<div
 				v-for="cartItem in cartItems"
 				:key="cartItem.id"
-				class="relative flex items-center gap-6 border border-slate-300 p-8 rounded-2xl"
+				class="relative flex items-center gap-6 border border-slate-300 p-8 rounded-2xl first:mt-10"
 			>
 				<img :src="cartItem.imageUrl" :alt="cartItem.title" class="w-[70px] h-[70px]" />
 				<div class="flex flex-col w-[150px]">

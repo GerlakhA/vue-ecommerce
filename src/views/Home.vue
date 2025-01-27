@@ -1,40 +1,19 @@
 <script setup lang="ts">
-import SneakersCard from '@/components/SneakersCard.vue'
 import Search from '@/components/Search.vue'
-import axios from 'axios'
+import SneakersCard from '@/components/SneakersCard.vue'
 
-import { useQuery } from '@tanstack/vue-query'
+import { useGetSneakers } from '@/hooks/useGetSneakers'
 import { computed, ref } from 'vue'
-import { Url } from '../config/constants'
-import type { ISneakers } from '../config/types'
 
 const searchValue = ref('')
-// const sneakers = ref<ISneakers[]>([])
 
-const fetchData = async () => {
-	const { data } = await axios.get<ISneakers[]>(`${Url}/sneakers`)
-
-	return data
-}
-
-const { data: sneakers } = useQuery({
-	queryKey: ['getSneakers'],
-	queryFn: async () => await fetchData()
-})
+const { data: sneakers } = useGetSneakers()
 
 const filterSneakers = computed(() => {
 	return sneakers.value?.filter(item =>
 		item.title.toLowerCase().includes(searchValue.value.toLowerCase())
 	)
 })
-
-// onMounted(async () => {
-//   try {
-//     await fetchData()
-//   } catch (error) {
-//     alert(error)
-//   }
-// })
 </script>
 
 <template>

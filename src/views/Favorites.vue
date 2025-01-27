@@ -3,10 +3,7 @@ import type { ISneakers } from '@/config/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import axios from 'axios'
 import Button from 'primevue/button'
-import { ref } from 'vue'
 
-const nameValue = ref('')
-const priceValue = ref(0)
 const client = useQueryClient()
 
 const { data: favorites } = useQuery({
@@ -39,7 +36,8 @@ const { mutate: addToCart, isPending: isCreate } = useMutation({
 </script>
 
 <template>
-	<div class="p-10 flex flex-col gap-4">
+	<div class="p-10 flex flex-col gap-4 h-screen">
+		<h2 class="font-bold text-4xl">Избранные</h2>
 		<div
 			v-for="favorite in favorites"
 			:key="favorite.id"

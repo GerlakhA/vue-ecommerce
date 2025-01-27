@@ -3,6 +3,7 @@ export interface ISneakers {
 	title: string
 	price: number
 	imageUrl: string
+	isFavotite: boolean
 }
 
 export interface ISneakerById {
@@ -11,12 +12,4 @@ export interface ISneakerById {
 	price: number
 	imageUrl: string
 	isFavorite: boolean
-	favoriteId: number | null
-	isAdded: boolean
-}
-
-export interface ITest {
-	id: string
-	name: string
-	price: number
 }

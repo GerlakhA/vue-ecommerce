@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Url } from '@/config/constants'
 import type { ISneakers } from '@/config/types'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import axios from 'axios'
+import { useAddToCart } from '@/hooks/useAddToCart'
+import { useAddToFavorites } from '@/hooks/useAddToFavorites'
+import { useQueryClient } from '@tanstack/vue-query'
 import Button from 'primevue/button'
 import { toast } from 'vue3-toastify'
 
@@ -11,25 +11,32 @@ defineProps<{
 }>()
 
 const client = useQueryClient()
+// const isFavorite = ref(false)
+// const favoriteImg = computed(() => (isFavorite.value ? '/like-2.svg' : '/like-1.svg'))
 
-const addToCart = async (data: Omit<ISneakers, 'id'>) => {
-	try {
-		const res = await axios.post<Omit<ISneakers, 'id'>>(`${Url}/cart`, data)
-		return res.data
-	} catch (error) {
-		alert(error)
-	}
+const { mutate: addToFavorites } = useAddToFavorites()
+
+const { mutate: addToCart } = useAddToCart()
+
+const handleClickFavorite = (e: MouseEvent, data: Omit<ISneakers, 'id'>) => {
+	e.stopPropagation()
+	addToFavorites(
+		{ ...data, isFavotite: true },
+		{
+			onSuccess: () => {
+				client.invalidateQueries({ queryKey: ['cartItem'] })
+				toast.success(`${data.title} add to favorites successfully!`)
+			}
+		}
+	)
 }
 
-const { mutate } = useMutation({
-	mutationFn: async (data: Omit<ISneakers, 'id'>) => await addToCart(data)
-})
-
-const handleClick = (data: Omit<ISneakers, 'id'>) => {
-	mutate(data, {
+const handleClickCart = (e: MouseEvent, data: Omit<ISneakers, 'id'>) => {
+	e.stopPropagation()
+	addToCart(data, {
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: ['cartItem'] })
-			toast.success(`${data.title} added to cart successfully!`)
+			toast.success(`${data.title} add to cart successfully!`)
 		}
 	})
 }
@@ -39,13 +46,17 @@ const handleClick = (data: Omit<ISneakers, 'id'>) => {
 	<div
 		class="relative bg-white border-2 border-slate-100 rounded-3xl p-8 cursor-pointer transition hover:-translate-y-2 hover:shadow-xl"
 	>
-		<!-- <img
-			v-if="onClickFavorite"
-			:src="!isFavorite ? '/like-1.svg' : '/like-2.svg'"
-			alt="Like 1"
-			class="absolute top-8 left-8"
-			@click="onClickFavorite"
-		/> -->
+		<Button
+			icon=" pi pi-heart"
+			@click="e => handleClickFavorite(e, sneaker)"
+			class="absolute top-8 left-8 w-12 h-12"
+		>
+			<img
+				:src="sneaker.isFavotite ? '/like-2.svg' : '/like-1.svg'"
+				alt="favorite"
+				class="w-12 h-12"
+			/>
+		</Button>
 
 		<img :src="sneaker.imageUrl" alt="Sneaker" />
 
@@ -57,9 +68,9 @@ const handleClick = (data: Omit<ISneakers, 'id'>) => {
 				<b class="text-black">{{ sneaker.price }} руб.</b>
 			</div>
 			<Button
-				@click="handleClick(sneaker)"
+				@click="e => handleClickCart(e, sneaker)"
 				label="В корзину"
-				class="w-[120px] h-[50px] text-white bg-green-500"
+				class="w-[120px] h-[50px] text-white bg-green-500 rounded-xl hover:bg-green-500/60"
 			/>
 		</div>
 	</div>
